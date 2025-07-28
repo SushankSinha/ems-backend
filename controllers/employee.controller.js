@@ -35,12 +35,40 @@ export const loginEmployee = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ id: employee._id, role: employee.role, name: employee.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json( {token : token, role : employee.role, name: employee.name});
+    const token = jwt.sign(
+      {
+        id: employee._id,
+        role: employee.role,
+        name: employee.name,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // ✅ Send token in HTTP-only, secure cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+
+    res.status(200).json({
+      message: 'Login successful',
+      role: employee.role,
+      name: employee.name,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const checkAuth = (req, res) => {
+  // If this function runs, user is authenticated
+  return res.status(200).json({ message: 'Authenticated'});
+};
+
+export default checkAuth;
 
 // Get all employee (Admin or Manager)
 export const getAllEmployees = async (req, res) => {
