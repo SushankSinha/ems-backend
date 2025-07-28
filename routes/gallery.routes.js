@@ -10,6 +10,7 @@ import {
   getGalleryDates
 } from '../controllers/gallery.controller.js';
 import { protect, rhaAdmin } from '../middlewares/access.js';
+import { limiter } from '../utils/rateLimiter.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ const upload = multer({ dest: 'uploads/' });
 router.post('/', protect, rhaAdmin, upload.single('image'), createGalleryImage);
 router.patch('/:id', protect, rhaAdmin, upload.single('image'), updateGalleryImage);
 
-router.get('/dates', getGalleryDates);
-router.get('/', getAllGalleryImages);
+router.get('/dates', limiter, getGalleryDates);
+router.get('/', limiter, getAllGalleryImages);
 
 export default router;
